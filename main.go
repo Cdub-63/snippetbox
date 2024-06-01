@@ -7,41 +7,42 @@ import (
 	"strconv"
 )
 
-func home(w http.ResponseWriter, r *http.Request) {
+func getHome(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Server", "Go")
 	w.Write([]byte("Hello from Snippetbox"))
 }
 
-// Add a snippetView handler function.
-func snippetView(w http.ResponseWriter, r *http.Request) {
-	// Extract the value of the id wildcard from the request using r.PathValue()
-	// and try to convert it to an integer using the strconv.Atoi() function. If
-	// it can't be converted to an integer, or the value is less than 1, we
-	// return a 404 page not found response.
+func getSnippetView(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil || id < 1 {
 		http.NotFound(w, r)
 		return
 	}
 
-	// Use the fmt.Sprintf() function to interpolate the id value with a
-	// message, then write it as the HTTP response.
-	msg := fmt.Sprintf("Display a specific snippet with ID %d...", id)
-	w.Write([]byte(msg))
+	fmt.Fprintf(w, "Display a specific snippet with ID %d...", id)
 }
 
-// Add a snippetCreate handler function.
-func snippetCreate(w http.ResponseWriter, r *http.Request) {
+func getSnippetCreate(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Display a form for creating a new snippet..."))
+}
+
+func postSnippetCreate(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusCreated)
+	w.Write([]byte("Create a new snippet..."))
 }
 
 func main() {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/{$}", home)
-	mux.HandleFunc("/snippet/view/{id}", snippetView)
-	mux.HandleFunc("/snippet/create", snippetCreate)
+
+	// Get Methods
+	mux.HandleFunc("GET /{$}", getHome)
+	mux.HandleFunc("GET /snippet/view/{id}", getSnippetView)
+	mux.HandleFunc("GET /snippet/create", getSnippetCreate)
+
+	// Post Methods
+	mux.HandleFunc("POST /snippet/create", postSnippetCreate)
 
 	log.Print("starting server on :4000")
-
 	err := http.ListenAndServe(":4000", mux)
 	log.Fatal(err)
 }
