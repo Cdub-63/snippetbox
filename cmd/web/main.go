@@ -8,15 +8,18 @@ import (
 func main() {
 	mux := http.NewServeMux()
 
-	// Get Methods
+	fileServer := http.FileServer(http.Dir("./ui/static/"))
+
+	mux.Handle("GET /static/", http.StripPrefix("/static", fileServer))
+
 	mux.HandleFunc("GET /{$}", getHome)
 	mux.HandleFunc("GET /snippet/view/{id}", getSnippetView)
 	mux.HandleFunc("GET /snippet/create", getSnippetCreate)
 
-	// Post Methods
 	mux.HandleFunc("POST /snippet/create", postSnippetCreate)
 
 	log.Print("starting server on :4000")
+
 	err := http.ListenAndServe(":4000", mux)
 	log.Fatal(err)
 }
